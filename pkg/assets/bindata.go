@@ -54,10 +54,31 @@ func (fi bindataFileInfo) Sys() interface{} {
 	return nil
 }
 
-var _manifestsOpenshiftConformanceValidatedYaml = []byte(`podSpec:
+var _manifestsOpenshiftConformanceValidatedYaml = []byte(`config-map:
+  ytt-transform.yaml: |
+    #@ load("@ytt:overlay", "overlay")
+    #@overlay/match by=overlay.all
+    #@overlay/match-child-defaults expects="0+"
+    ---
+    items:
+      #@overlay/match by=overlay.all
+      - items:
+        #@overlay/match by=overlay.map_key("status")
+        #@overlay/remove via=lambda left, right: right
+        - status: skipped
+podSpec:
   restartPolicy: Never
   serviceAccountName: sonobuoy-serviceaccount
+  volumes:
+    - name: shared
+      emptyDir: {}
   containers:
+    #- name: postprocessing
+    #  image: schnake/postprocessor:v0
+    #  command: ["/sonobuoy-processor"]
+    #  volumeMounts:
+    #  - mountPath: /tmp/sonobuoy/results
+    #    name: results
     - name: report-progress
       image: quay.io/ocp-cert/openshift-tests-provider-cert:devel
       imagePullPolicy: Always
@@ -66,6 +87,8 @@ var _manifestsOpenshiftConformanceValidatedYaml = []byte(`podSpec:
       volumeMounts:
       - mountPath: /tmp/sonobuoy/results
         name: results
+      - mountPath: /tmp/shared
+        name: shared
       env:
         - name: CERT_LEVEL
           value: "1"
@@ -96,6 +119,8 @@ spec:
   volumeMounts:
   - mountPath: /tmp/sonobuoy/results
     name: results
+  - mountPath: /tmp/shared
+    name: shared
   env:
     - name: CERT_LEVEL
       value: "1"
@@ -128,10 +153,31 @@ func manifestsOpenshiftConformanceValidatedYaml() (*asset, error) {
 	return a, nil
 }
 
-var _manifestsOpenshiftKubeConformanceYaml = []byte(`podSpec:
+var _manifestsOpenshiftKubeConformanceYaml = []byte(`config-map:
+  ytt-transform.yaml: |
+    #@ load("@ytt:overlay", "overlay")
+    #@overlay/match by=overlay.all
+    #@overlay/match-child-defaults expects="0+"
+    ---
+    items:
+      #@overlay/match by=overlay.all
+      - items:
+        #@overlay/match by=overlay.map_key("status")
+        #@overlay/remove via=lambda left, right: right
+        - status: skipped
+podSpec:
   restartPolicy: Never
   serviceAccountName: sonobuoy-serviceaccount
+  volumes:
+    - name: shared
+      emptyDir: {}
   containers:
+    #- name: postprocessing
+    #  image: schnake/postprocessor:v0
+    #  command: ["/sonobuoy-processor"]
+    #  volumeMounts:
+    #  - mountPath: /tmp/sonobuoy/results
+    #    name: results
     - name: report-progress
       image: quay.io/ocp-cert/openshift-tests-provider-cert:devel
       imagePullPolicy: Always
@@ -140,6 +186,8 @@ var _manifestsOpenshiftKubeConformanceYaml = []byte(`podSpec:
       volumeMounts:
       - mountPath: /tmp/sonobuoy/results
         name: results
+      - mountPath: /tmp/shared
+        name: shared
       env:
         - name: CERT_LEVEL
           value: "0"
@@ -170,6 +218,8 @@ spec:
   volumeMounts:
   - mountPath: /tmp/sonobuoy/results
     name: results
+  - mountPath: /tmp/shared
+    name: shared
   env:
     - name: CERT_LEVEL
       value: "0"
