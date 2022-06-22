@@ -73,12 +73,13 @@ podSpec:
     - name: shared
       emptyDir: {}
   containers:
-    #- name: postprocessing
-    #  image: schnake/postprocessor:v0
-    #  command: ["/sonobuoy-processor"]
-    #  volumeMounts:
-    #  - mountPath: /tmp/sonobuoy/results
-    #    name: results
+    - name: postprocessing
+      image: quay.io/ocp-cert/openshift-tests-provider-cert:devel
+      imagePullPolicy: Always
+      command: ["/usr/bin/sonobuoy-processor"]
+      volumeMounts:
+      - mountPath: /tmp/sonobuoy/results
+        name: results
     - name: report-progress
       image: quay.io/ocp-cert/openshift-tests-provider-cert:devel
       imagePullPolicy: Always
@@ -107,7 +108,7 @@ podSpec:
 sonobuoy-config:
   driver: Job
   plugin-name: openshift-conformance-validated
-  result-format: junit
+  result-format: manual
   description: The end-to-end tests maintained by OpenShift to certify the Provider running the OpenShift Container Platform.
   source-url: https://github.com/openshift/provider-certification-tool/blob/mvp/tools/plugins/openshift-conformance-validated.yaml
   skipCleanup: true
@@ -124,6 +125,8 @@ spec:
   env:
     - name: CERT_LEVEL
       value: "1"
+    - name: DEV_MODE_COUNT
+      value: "50"
     - name: ENV_NODE_NAME
       valueFrom:
         fieldRef:
@@ -162,9 +165,11 @@ var _manifestsOpenshiftKubeConformanceYaml = []byte(`config-map:
     items:
       #@overlay/match by=overlay.all
       - items:
-        #@overlay/match by=overlay.map_key("status")
-        #@overlay/remove via=lambda left, right: right
-        - status: skipped
+          #@overlay/match by=overlay.all
+          - items:
+            #@overlay/match by=overlay.subset({"status": "skipped"})
+            #@overlay/remove
+            -
 podSpec:
   restartPolicy: Never
   serviceAccountName: sonobuoy-serviceaccount
@@ -172,12 +177,13 @@ podSpec:
     - name: shared
       emptyDir: {}
   containers:
-    #- name: postprocessing
-    #  image: schnake/postprocessor:v0
-    #  command: ["/sonobuoy-processor"]
-    #  volumeMounts:
-    #  - mountPath: /tmp/sonobuoy/results
-    #    name: results
+    - name: postprocessing
+      image: quay.io/ocp-cert/openshift-tests-provider-cert:devel
+      imagePullPolicy: Always
+      command: ["/usr/bin/sonobuoy-processor"]
+      volumeMounts:
+      - mountPath: /tmp/sonobuoy/results
+        name: results
     - name: report-progress
       image: quay.io/ocp-cert/openshift-tests-provider-cert:devel
       imagePullPolicy: Always
@@ -206,7 +212,7 @@ podSpec:
 sonobuoy-config:
   driver: Job
   plugin-name: openshift-kube-conformance
-  result-format: junit
+  result-format: manual
   description: The end-to-end tests maintained by Kubernetes to certify the platform.
   source-url: https://github.com/openshift/provider-certification-tool/blob/mvp/tools/plugins/openshift-kube-conformance.yaml
   skipCleanup: true
@@ -223,6 +229,8 @@ spec:
   env:
     - name: CERT_LEVEL
       value: "0"
+    - name: DEV_MODE_COUNT
+      value: "50"
     - name: ENV_NODE_NAME
       valueFrom:
         fieldRef:
