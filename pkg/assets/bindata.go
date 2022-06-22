@@ -63,9 +63,12 @@ var _manifestsOpenshiftConformanceValidatedYaml = []byte(`config-map:
     items:
       #@overlay/match by=overlay.all
       - items:
-        #@overlay/match by=overlay.map_key("status")
-        #@overlay/remove via=lambda left, right: right
-        - status: skipped
+          #@overlay/match by=overlay.all
+          - items:
+            #@overlay/match by=overlay.subset({"status": "skipped"})
+            #@overlay/remove
+            -
+
 podSpec:
   restartPolicy: Never
   serviceAccountName: sonobuoy-serviceaccount
@@ -126,7 +129,7 @@ spec:
     - name: CERT_LEVEL
       value: "1"
     - name: DEV_MODE_COUNT
-      value: "50"
+      value: "10"
     - name: ENV_NODE_NAME
       valueFrom:
         fieldRef:
@@ -170,6 +173,7 @@ var _manifestsOpenshiftKubeConformanceYaml = []byte(`config-map:
             #@overlay/match by=overlay.subset({"status": "skipped"})
             #@overlay/remove
             -
+
 podSpec:
   restartPolicy: Never
   serviceAccountName: sonobuoy-serviceaccount
@@ -230,7 +234,7 @@ spec:
     - name: CERT_LEVEL
       value: "0"
     - name: DEV_MODE_COUNT
-      value: "50"
+      value: "10"
     - name: ENV_NODE_NAME
       valueFrom:
         fieldRef:
